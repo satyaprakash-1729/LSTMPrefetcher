@@ -573,7 +573,7 @@ void CACHE::handle_read()
                     else if (cache_type == IS_LLC)
 		      {
 			cpu = read_cpu;
-			llc_prefetcher_operate(block[set][way].address<<LOG2_BLOCK_SIZE, RQ.entry[index].ip, 1, RQ.entry[index].type, 0);
+			llc_prefetcher_operate(block[set][way].address<<LOG2_BLOCK_SIZE, RQ.entry[index].ip, 1, RQ.entry[index].type, 0, warmup_complete[cpu]);
 			cpu = 0;
 		      }
                 }
@@ -797,7 +797,7 @@ void CACHE::handle_read()
                         if (cache_type == IS_LLC)
 			  {
 			    cpu = read_cpu;
-			    llc_prefetcher_operate(RQ.entry[index].address<<LOG2_BLOCK_SIZE, RQ.entry[index].ip, 0, RQ.entry[index].type, 0);
+			    llc_prefetcher_operate(RQ.entry[index].address<<LOG2_BLOCK_SIZE, RQ.entry[index].ip, 0, RQ.entry[index].type, 0, warmup_complete[cpu]);
 			    cpu = 0;
 			  }
                     }
@@ -865,7 +865,7 @@ void CACHE::handle_prefetch()
                     else if (cache_type == IS_LLC)
 		      {
 			cpu = prefetch_cpu;
-			PQ.entry[index].pf_metadata = llc_prefetcher_operate(block[set][way].address<<LOG2_BLOCK_SIZE, PQ.entry[index].ip, 1, PREFETCH, PQ.entry[index].pf_metadata);
+			PQ.entry[index].pf_metadata = llc_prefetcher_operate(block[set][way].address<<LOG2_BLOCK_SIZE, PQ.entry[index].ip, 1, PREFETCH, PQ.entry[index].pf_metadata, warmup_complete[cpu]);
 			cpu = 0;
 		      }
 		  }
@@ -938,7 +938,7 @@ void CACHE::handle_prefetch()
 			      if (cache_type == IS_LLC)
 				{
 				  cpu = prefetch_cpu;
-				  PQ.entry[index].pf_metadata = llc_prefetcher_operate(PQ.entry[index].address<<LOG2_BLOCK_SIZE, PQ.entry[index].ip, 0, PREFETCH, PQ.entry[index].pf_metadata);
+				  PQ.entry[index].pf_metadata = llc_prefetcher_operate(PQ.entry[index].address<<LOG2_BLOCK_SIZE, PQ.entry[index].ip, 0, PREFETCH, PQ.entry[index].pf_metadata, warmup_complete[cpu]);
 				  cpu = 0;
 				}
 			    }
@@ -1392,7 +1392,6 @@ int CACHE::prefetch_line(uint64_t ip, uint64_t base_addr, uint64_t pf_addr, int 
 
     if (PQ.occupancy < PQ.SIZE) {
         if ((base_addr>>LOG2_PAGE_SIZE) == (pf_addr>>LOG2_PAGE_SIZE)) {
-            
             PACKET pf_packet;
             pf_packet.fill_level = pf_fill_level;
 	    pf_packet.pf_origin_level = fill_level;
