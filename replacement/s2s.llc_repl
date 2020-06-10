@@ -25,18 +25,20 @@ uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, c
             break;
         }
     }
-
     // find prefetched block which can be replaced
     if(way==NUM_WAY){
-        min_confidence = INT64_MAX;
-        way_found = -1;
+        double min_confidence = DBL_MAX;
+        uint32_t way_found = NUM_WAY;
         for (way=0; way<NUM_WAY; way++) {
-            if(block[set][way].s2s_confidence < min_confidence){
-                min_confidence = block[set][way].s2s_confidence;
+            if(!block[set][way].prefetch) continue;
+            // cout<<" >>>>>>>>>>>>> " << block[set][way].address << " - " << block[set][way].full_addr << "\n";
+            uint64_t block_idx = block[set][way].full_addr>>LOG2_BLOCK_SIZE;
+            if(s2s_confidence_table.count(block_idx) && s2s_confidence_table[block_idx] < min_confidence){
+                min_confidence = s2s_confidence_table[block_idx];
                 way_found = way;
             }
         }
-        if(way_found!=-1){
+        if(way_found!=NUM_WAY){
             return way_found;
         }
     }

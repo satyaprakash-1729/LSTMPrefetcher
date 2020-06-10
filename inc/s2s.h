@@ -1,3 +1,4 @@
+#include <unordered_map>
+#include "float.h"
 
-
-extern uint64_t s2s_confidence_table[LLC_SET][LLC_WAY];
+extern unordered_map<uint64_t, double> s2s_confidence_table;

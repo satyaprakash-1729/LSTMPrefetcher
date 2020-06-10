@@ -5,6 +5,8 @@ from keras_self_attention import SeqSelfAttention
 import os
 import sys
 from keras.utils import to_categorical
+from keras import backend as K
+
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -24,6 +26,7 @@ def initialize_delta_to_idx(ROOT_DIR="./"):
 
 def initialize_model(ROOT_DIR="./"):
   f = open(ROOT_DIR + "model_for_cpp_mcf.json")
+  # K.clear_session()
   model = keras.models.model_from_json(f.read(), custom_objects={'SeqSelfAttention': SeqSelfAttention})
   f.close()
   model.load_weights(ROOT_DIR + "model_for_cpp_weights_mcf.h5")
@@ -105,18 +108,18 @@ def prefetch_predict(lastNData, ROOT_DIR="./"):
     topkidxs = []
     lastaddr = int(lastNData[2*N-1])
     for i in range(len(idxs)):
-      if len(topkidxs) == topk:
+      if len(topkidxs) == 2*topk:
         break
       delta1 = int(idx_to_delta[str(idxs[-i-1])])
       if ((lastaddr + delta1) >> LOG2_PAGE_SIZE) == (lastaddr >> LOG2_PAGE_SIZE):
-        topkidxs.append(delta1)
+        topkidxs += [delta1, y_pred[0][idxs[-i-1]]]
 
     return topkidxs
   else:
     X, y, model, _, delta_to_idx, _, _ = get_input_data(lastNData, N)
-    if str(y) + ".0" not in delta_to_idx:
+    if str(y) not in delta_to_idx:
       return "Not Trained", y
-    y = to_categorical(delta_to_idx[str(y)+".0"], num_classes=10).reshape(1, 10)
+    y = to_categorical(delta_to_idx[str(y)], num_classes=10).reshape(1, 10)
     model.fit(X, y, batch_size=1, epochs=1, shuffle=False, verbose=False)
     with open(ROOT_DIR + 'model_for_cpp_mcf.json', 'w+') as fout:
         fout.write(model.to_json())
