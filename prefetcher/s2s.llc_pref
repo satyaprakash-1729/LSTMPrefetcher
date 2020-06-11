@@ -1,6 +1,6 @@
 #include "cache.h"
 #include "vector"
-#include <fstream>
+// #include <fstream>
 #include <unordered_map>
 
 static std::vector<std::string> ips;
@@ -9,12 +9,12 @@ static std::vector<std::string> addrs;
 unordered_map<uint64_t, double> s2s_confidence_table;
 
 
-std::ofstream fout;
+// std::ofstream fout;
 
 void CACHE::llc_prefetcher_initialize() 
 {
-	fout.open("/usr/eda/cs259/prakashsatya/data_final.csv");
-	fout << "ADDRS\tPCS\n";
+	// fout.open("/usr/eda/cs259/prakashsatya/data_omnetpp.csv");
+	// fout << "ADDRS\tPCS\n";
 }
 
 uint32_t CACHE::llc_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache_hit, uint8_t type, uint32_t metadata_in, int warmup)
@@ -40,7 +40,7 @@ uint32_t CACHE::llc_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
 			                                });
 			  	// fout<<addrc<<"\t"<<ipc<<endl;
 							  	if(warmup){
-							  		std::string cmd = "python3 prefetch_predictor_2.py "+ ipc +" "+ addrc +" 4 " + std::to_string(LOG2_PAGE_SIZE) + " 0";
+							  		std::string cmd = "python3 prefetch_predictor_2.py "+ ipc +" "+ addrc +" 3 " + std::to_string(LOG2_PAGE_SIZE) + " 0";
 									char buffer[128];
 								    std::string result = "";
 								    FILE* pipe = popen(cmd.c_str(), "r");
@@ -73,7 +73,7 @@ uint32_t CACHE::llc_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache
 
 								    pclose(pipe);
 								}else{
-									std::string cmd = "python3 prefetch_predictor_2.py "+ ipc +" "+ addrc +" 4 " + std::to_string(LOG2_PAGE_SIZE) + " 1";
+									std::string cmd = "python3 prefetch_predictor_2.py "+ ipc +" "+ addrc +" 3 " + std::to_string(LOG2_PAGE_SIZE) + " 1";
 									char buffer[128];
 								    std::string result = "";
 								    FILE* pipe = popen(cmd.c_str(), "r");
@@ -107,5 +107,5 @@ uint32_t CACHE::llc_prefetcher_cache_fill(uint64_t addr, uint32_t set, uint32_t 
 
 void CACHE::llc_prefetcher_final_stats()
 {
-	fout.close();
+	// fout.close();
 }

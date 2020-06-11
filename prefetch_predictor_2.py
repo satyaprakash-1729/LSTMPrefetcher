@@ -25,11 +25,11 @@ def initialize_delta_to_idx(ROOT_DIR="./"):
   return delta_to_idx
 
 def initialize_model(ROOT_DIR="./"):
-  f = open(ROOT_DIR + "model_for_cpp_mcf.json")
+  f = open(ROOT_DIR + "model_for_cpp_omnetpp_self_attn.json")
   # K.clear_session()
   model = keras.models.model_from_json(f.read(), custom_objects={'SeqSelfAttention': SeqSelfAttention})
   f.close()
-  model.load_weights(ROOT_DIR + "model_for_cpp_weights_mcf.h5")
+  model.load_weights(ROOT_DIR + "model_for_cpp_weights_omnetpp_self_attn.h5")
   model.compile(optimizer=keras.optimizers.Adam(lr=0.001), loss='categorical_crossentropy', metrics=['categorical_accuracy'])
   return model
 
@@ -121,9 +121,9 @@ def prefetch_predict(lastNData, ROOT_DIR="./"):
       return "Not Trained", y
     y = to_categorical(delta_to_idx[str(y)], num_classes=10).reshape(1, 10)
     model.fit(X, y, batch_size=1, epochs=1, shuffle=False, verbose=False)
-    with open(ROOT_DIR + 'model_for_cpp_mcf.json', 'w+') as fout:
+    with open(ROOT_DIR + 'model_for_cpp_omnetpp_self_attn.json', 'w+') as fout:
         fout.write(model.to_json())
-    model.save_weights(ROOT_DIR + 'model_for_cpp_weights_mcf.h5', overwrite=True)
+    model.save_weights(ROOT_DIR + 'model_for_cpp_weights_omnetpp_self_attn.h5', overwrite=True)
     return "Trained"
   
 idx_to_delta = initialize_idx_to_delta()

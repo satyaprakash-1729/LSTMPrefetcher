@@ -96,6 +96,8 @@ class CACHE : public MEMORY {
              pf_useful,
              pf_useless,
              pf_fill;
+             
+    int which_pf = 0;
 
     // queues
     PACKET_QUEUE WQ{NAME + "_WQ", WQ_SIZE}, // write queue
