@@ -12,6 +12,10 @@ Instructions to RUN S2S Prefetcher and Replacement:
 		Replace X with no. of warmup instructions, Y with number of simulation instructions and
 		Z with the benchmark name e.g. 482.sphinx3-234B.champsimtrace.xz.
 
+The Prefetcher code is in prefetcher/s2s.llc_pref.
+The replacement code is in replacement/s2s.llc_repl.
+The Data Preprocessing and LSTM + Attention model training code is in kernel4b29358629.ipynb.
+A trained model is in the root directory in JSON files for testing.
 
 <p align="center">
   <h1 align="center"> ChampSim </h1>
