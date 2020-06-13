@@ -1,3 +1,18 @@
+Instructions to RUN S2S Prefetcher and Replacement:
+
+1. Put the dpc3_traces folder in the root directory.
+2. For S2S Prefetcher with LRU:
+	2a. Run ./build_champsim.sh bimodal no no no s2s lru 1
+	2b. Run ./run_champsim.sh bimodal-no-no-no-s2s-lru-1core X Y Z
+		Replace X with no. of warmup instructions, Y with number of simulation instructions and
+		Z with the benchmark name e.g. 482.sphinx3-234B.champsimtrace.xz.
+3. For S2S Prefetcher with S2S Replacement:
+	3a. Run ./build_champsim.sh bimodal no no no s2s s2s 1
+	3b. Run ./run_champsim.sh bimodal-no-no-no-s2s-s2s-1core X Y Z
+		Replace X with no. of warmup instructions, Y with number of simulation instructions and
+		Z with the benchmark name e.g. 482.sphinx3-234B.champsimtrace.xz.
+
+
 <p align="center">
   <h1 align="center"> ChampSim </h1>
   <p> ChampSim is a trace-based simulator for a microarchitecture study. You can sign up to the public mailing list by sending an empty mail to champsim+subscribe@googlegroups.com. Traces for the 3rd Data Prefetching Championship (DPC-3) can be found from here (https://dpc3.compas.cs.stonybrook.edu/?SW_IS). A set of traces used for the 2nd Cache Replacement Championship (CRC-2) can be found from this link. (http://bit.ly/2t2nkUj) <p>
