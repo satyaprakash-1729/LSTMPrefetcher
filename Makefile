@@ -4,13 +4,13 @@ srcExt = cc
 srcDir = src branch replacement prefetcher
 objDir = obj
 binDir = bin
-inc = inc
+inc = inc /usr/eda/cs259/ajis01/ML/virtualenv/include 
 
 debug = 1
 
 CFlags = -Wall -O3 -std=c++11
-LDFlags =
-libs =
+LDFlags = -lpython3.6m
+libs = 
 libDir =
 
 

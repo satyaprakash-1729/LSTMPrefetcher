@@ -1,7 +1,23 @@
 #include "cache.h"
 #include "vector"
-// #include <fstream>
+#include <fstream>
 #include <unordered_map>
+#include <bits/stdc++.h> 
+#include "Python.h"
+#include "stdlib.h"
+#include <tuple>
+#include <iostream>
+#include "numpy/arrayobject.h"
+#define prefetchN 3
+#define LastN 11
+
+
+
+PyObject *pName, *pModule, *pDict, *pFuncIdx, *pFuncDelta, *pFuncModel, *pFuncPredict, *pValue, *presultIdx, *presultDelta,  *presultModel, *presult, *resultTuple, *pArgs;
+PyArrayObject *result;
+
+static std::vector<uint64_t> LastPCs;
+static std::vector<uint64_t> LastAddrs;
 
 static std::vector<std::string> ips;
 static std::vector<std::string> addrs;
@@ -9,94 +25,122 @@ static std::vector<std::string> addrs;
 unordered_map<uint64_t, double> s2s_confidence_table;
 
 
-// std::ofstream fout;
+
+std::ofstream fout;
 
 void CACHE::llc_prefetcher_initialize() 
 {
-	// fout.open("/usr/eda/cs259/prakashsatya/data_omnetpp.csv");
-	// fout << "ADDRS\tPCS\n";
+	//fout.open("/usr/eda/cs259/ajis01/Final_Project/LSTMPrefetcher/LSTMPrefetcher/data_collection/data_omnetpp_llc.csv");
+	//fout << "ADDRS\tPCS\n";
+  setenv("PYTHONPATH","./",1);
+
+
+  // Initialize the Python Interpreter
+  Py_Initialize();
+
+
+  // Build the name object
+  pName = PyUnicode_FromString((char*)"prefetch_predictor_2");
+
+  // Load the module object
+  pModule = PyImport_Import(pName);
+
+
+  // pDict is a borrowed reference 
+  pDict = PyModule_GetDict(pModule);
+
+
+  // pFunc is also a borrowed reference 
+  pFuncIdx     = PyDict_GetItemString(pDict, (char*)"initialize_idx_to_delta");
+  pFuncDelta   = PyDict_GetItemString(pDict, (char*)"initialize_delta_to_idx");
+  pFuncModel   = PyDict_GetItemString(pDict, (char*)"initialize_model");
+  pFuncPredict = PyDict_GetItemString(pDict, (char*)"prefetch_predict");
 }
+
 
 uint32_t CACHE::llc_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache_hit, uint8_t type, uint32_t metadata_in, int warmup)
 {
-	try{
-	  // if (type == LOAD){
-	  	ips.push_back(std::to_string(ip));
-	  	// uint64_t lastaddr;
-	  	// if(addrs.size())
-	  	// 	lastaddr = (uint64_t)stol(addrs.back());
-	  	addrs.push_back(std::to_string(addr));
-	  	if(ips.size()==11){
-	  		// if(addr>>LOG2_PAGE_SIZE == lastaddr>>LOG2_PAGE_SIZE){
-		  		std::string addrc = std::accumulate(std::begin(addrs), std::end(addrs), string(),
-		                                [](string &ss, string &s)
-		                                {
-		                                    return ss.empty() ? s : ss + "," + s;
-		                                });
-			  	std::string ipc = std::accumulate(std::begin(ips), std::end(ips), string(),
-			                                [](string &ss, string &s)
-			                                {
-			                                    return ss.empty() ? s : ss + "," + s;
-			                                });
-			  	// fout<<addrc<<"\t"<<ipc<<endl;
-							  	if(warmup){
-							  		std::string cmd = "python3 prefetch_predictor_2.py "+ ipc +" "+ addrc +" 3 " + std::to_string(LOG2_PAGE_SIZE) + " 0";
-									char buffer[128];
-								    std::string result = "";
-								    FILE* pipe = popen(cmd.c_str(), "r");
-								    if (!pipe) throw std::runtime_error("popen() failed!");
-								    try {
-								        while (fgets(buffer, sizeof buffer, pipe) != NULL) {
-								            result += buffer;
-								        }
-								    } catch (...) {
-								        pclose(pipe);
-								        throw;
-								    }
-								    std::cout<<"---"<<result<<endl;
-								    size_t pos = 0;
-									std::string token;
-									std::string delimiter = ", ";
-									result = result.substr(1, result.length()-2);
-									bool confidence = false;
-									uint64_t pf_addr;
-									while ((pos = result.find(delimiter)) != std::string::npos) {
-									    token = result.substr(0, pos);
-									    if(!confidence){
-										    pf_addr = (((addr+stol(token))>>LOG2_BLOCK_SIZE)) << LOG2_BLOCK_SIZE;
-										    prefetch_line(ip, addr, pf_addr, FILL_LLC, 0);
-										}else{
-											s2s_confidence_table[pf_addr>>LOG2_BLOCK_SIZE] = stod(token);
-										}
-										result.erase(0, pos + delimiter.length());
-									}
+    LastPCs.push_back(ip);
+    LastAddrs.push_back(addr);
+    if(LastPCs.size() >= LastN)
+    {
+    
+      uint64_t pf_addr = ((addr>>LOG2_BLOCK_SIZE)+1) << LOG2_BLOCK_SIZE;
 
-								    pclose(pipe);
-								}else{
-									std::string cmd = "python3 prefetch_predictor_2.py "+ ipc +" "+ addrc +" 3 " + std::to_string(LOG2_PAGE_SIZE) + " 1";
-									char buffer[128];
-								    std::string result = "";
-								    FILE* pipe = popen(cmd.c_str(), "r");
-								    if (!pipe) throw std::runtime_error("popen() failed!");
-								    try {
-								        while (fgets(buffer, sizeof buffer, pipe) != NULL) {
-								            result += buffer;
-								        }
-								    } catch (...) {
-								        pclose(pipe);
-								        throw;
-								    }
-								    std::cout<<"---"<<result<<endl;
-									pclose(pipe);
-								}
-			  // }
-			ips.erase(ips.begin());
-			addrs.erase(addrs.begin());
-	  	}
-	  // }
-	}catch(...){
-		std::cerr<<"Error caught!\n";
-	}
+      DP ( if (warmup_complete[cpu]) {
+      cout << "[" << NAME << "] " << __func__ << hex << " base_cl: " << (addr>>LOG2_BLOCK_SIZE);
+      cout << " pf_cl: " << (pf_addr>>LOG2_BLOCK_SIZE) << " ip: " << ip << " cache_hit: " << +cache_hit << " type: " << +type << endl; });
+
+      long long int prefAddr[prefetchN];  
+
+      if (PyCallable_Check(pFuncIdx))
+      {
+          pValue=Py_BuildValue("");
+          pArgs = PyTuple_New(1);
+          PyTuple_SetItem(pArgs, 0, reinterpret_cast<PyObject*>(pValue));
+          presultIdx = PyObject_CallObject(pFuncIdx, pArgs);
+          PyErr_Print();
+      } else 
+      {
+          PyErr_Print();
+      }
+      
+      if (PyCallable_Check(pFuncDelta))
+      {
+          pValue=Py_BuildValue("");
+          pArgs = PyTuple_New(1);
+          PyTuple_SetItem(pArgs, 0, reinterpret_cast<PyObject*>(pValue));
+          presultDelta = PyObject_CallObject(pFuncDelta, pArgs);
+          PyErr_Print();
+      } else 
+      {
+          PyErr_Print();
+      }
+
+      if (PyCallable_Check(pFuncModel))
+      {
+          pValue=Py_BuildValue("");
+          pArgs = PyTuple_New(1);
+          PyTuple_SetItem(pArgs, 0, reinterpret_cast<PyObject*>(pValue));
+          presultModel = PyObject_CallObject(pFuncModel, pArgs);
+          PyErr_Print();
+      } else 
+      {
+          PyErr_Print();
+      }
+
+      if (PyCallable_Check(pFuncPredict))
+      {
+          pValue=Py_BuildValue("[i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,i,O,O,O,i,i]", LastPCs[0], LastPCs[1], LastPCs[2], LastPCs[3], LastPCs[4], LastPCs[5], LastPCs[6], LastPCs[7], LastPCs[8], LastPCs[9], LastPCs[10], LastAddrs[0], LastAddrs[1], LastAddrs[2], LastAddrs[3], LastAddrs[4], LastAddrs[5], LastAddrs[6], LastAddrs[7], LastAddrs[8], LastAddrs[9], LastAddrs[10], prefetchN, presultIdx, presultDelta, presultModel, LOG2_PAGE_SIZE, !warmup);
+          pArgs = PyTuple_New(1);
+          PyTuple_SetItem(pArgs, 0, reinterpret_cast<PyObject*>(pValue));
+          presult = PyObject_CallObject(pFuncPredict, pArgs);
+          PyErr_Print();
+      } else 
+      {
+          PyErr_Print();
+      }
+      int k=0;
+      if (PyList_Check(presult)) {
+          // okay, it's a list
+          for (Py_ssize_t i = 0; i < PyList_Size(presult)-1; i+=2) {
+              PyObject* next = PyList_GetItem(presult, i);
+              prefAddr[k++] = PyLong_AsLong(next) ;
+              PyObject* next1 = PyList_GetItem(presult, i+1);
+              s2s_confidence_table[pf_addr>>LOG2_BLOCK_SIZE] = PyFloat_AsDouble(next1) ;
+          }
+          for(int i=0; i<prefetchN; ++i)
+          { 
+          //  cout << "Addr: " << prefAddr[i] << "\n";
+            pf_addr = (prefAddr[i] > 0) ? (uint64_t) prefAddr[i]: (uint64_t) (~prefAddr[i] + 1);
+            prefetch_line(ip, addr, ((addr+pf_addr) >> LOG2_BLOCK_SIZE)<<LOG2_BLOCK_SIZE, FILL_LLC, 0);
+          }
+      }
+
+      LastAddrs.erase(LastAddrs.begin());
+      LastPCs.erase(LastPCs.begin());
+    }
+
   return metadata_in;
 }
 
@@ -107,5 +151,12 @@ uint32_t CACHE::llc_prefetcher_cache_fill(uint64_t addr, uint32_t set, uint32_t 
 
 void CACHE::llc_prefetcher_final_stats()
 {
-	// fout.close();
+	fout.close();
+  // Clean up
+  Py_DECREF(pValue);
+  Py_DECREF(pModule);
+  Py_DECREF(pName);
+
+  // Finish the Python Interpreter
+  Py_Finalize();
 }

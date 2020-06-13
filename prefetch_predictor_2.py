@@ -14,17 +14,20 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 def initialize_idx_to_delta(ROOT_DIR="./"):
   idx_to_delta = None
+  ROOT_DIR="./"
   with open(ROOT_DIR + 'idx_delta_map.json') as json_file:
     idx_to_delta = json.load(json_file)
   return idx_to_delta
 
 def initialize_delta_to_idx(ROOT_DIR="./"):
   delta_to_idx = None
+  ROOT_DIR="./"
   with open(ROOT_DIR + 'delta_idx_map.json') as json_file:
     delta_to_idx = json.load(json_file)
   return delta_to_idx
 
 def initialize_model(ROOT_DIR="./"):
+  ROOT_DIR="./"
   f = open(ROOT_DIR + "model_for_cpp_gcc_self_attn.json")
   # K.clear_session()
   model = keras.models.model_from_json(f.read(), custom_objects={'SeqSelfAttention': SeqSelfAttention})
@@ -98,6 +101,7 @@ def get_input_data(lastNData, N):
     return X, None, model, idx_to_delta, delta_to_idx, LOG2_PAGE_SIZE, topk
 
 def prefetch_predict(lastNData, ROOT_DIR="./"):
+  ROOT_DIR="./"
   N = 11
   is_warmup = lastNData[-1]
   if is_warmup == 0:
@@ -126,26 +130,26 @@ def prefetch_predict(lastNData, ROOT_DIR="./"):
     model.save_weights(ROOT_DIR + 'model_for_cpp_weights_gcc_self_attn.h5', overwrite=True)
     return "Trained"
   
-idx_to_delta = initialize_idx_to_delta()
-delta_to_idx = initialize_delta_to_idx()
-# delta_to_idx = {}
-# for k, v in idx_to_delta.items():
-#   delta_to_idx[v] = k
-
-# with open('idx_delta_map.json', 'w') as f:
-#   json.dump(delta_to_idx, f)
-model1 = initialize_model()
-
-args = []
-args += list(map(int, sys.argv[1].split(",")))
-args += list(map(int, sys.argv[2].split(",")))
-args += [int(sys.argv[3])]
-
-args += [idx_to_delta]
-args += [delta_to_idx]
-args += [model1]
-args += [int(sys.argv[4])]
-args += [int(sys.argv[5])]
-
-print(prefetch_predict(args))
-
+#idx_to_delta = initialize_idx_to_delta()
+#delta_to_idx = initialize_delta_to_idx()
+## delta_to_idx = {}
+## for k, v in idx_to_delta.items():
+##   delta_to_idx[v] = k
+#
+## with open('idx_delta_map.json', 'w') as f:
+##   json.dump(delta_to_idx, f)
+#model1 = initialize_model()
+#
+#args = []
+#args += list(map(int, sys.argv[1].split(",")))
+#args += list(map(int, sys.argv[2].split(",")))
+#args += [int(sys.argv[3])]
+#
+#args += [idx_to_delta]
+#args += [delta_to_idx]
+#args += [model1]
+#args += [int(sys.argv[4])]
+#args += [int(sys.argv[5])]
+#
+#print(prefetch_predict(args))
+#
