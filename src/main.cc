@@ -77,7 +77,8 @@ void print_sim_stats(uint32_t cpu, CACHE *cache)
         TOTAL_HIT += cache->sim_hit[cpu][i];
         TOTAL_MISS += cache->sim_miss[cpu][i];
     }
-
+    // cout<<"OUR MPKI: "<<<<endl;
+    cout << "MPKI----> " << cache->NAME << "  ---  " << cache->sim_miss[cpu][LOAD]<<endl; 
     cout << cache->NAME;
     cout << " TOTAL     ACCESS: " << setw(10) << TOTAL_ACCESS << "  HIT: " << setw(10) << TOTAL_HIT << "  MISS: " << setw(10) << TOTAL_MISS << endl;
 
@@ -92,6 +93,11 @@ void print_sim_stats(uint32_t cpu, CACHE *cache)
 
     cout << cache->NAME;
     cout << " WRITEBACK ACCESS: " << setw(10) << cache->sim_access[cpu][3] << "  HIT: " << setw(10) << cache->sim_hit[cpu][3] << "  MISS: " << setw(10) << cache->sim_miss[cpu][3] << endl;
+}
+
+void print_sim_stats(uint32_t cpu, CACHE *cache, uint64_t simulation_instructions)
+{
+    cout << "MPKI----> " << cache->NAME << "  ---  " << cache->sim_miss[cpu][LOAD] / float(simulation_instructions)<<endl; 
 }
 
 void print_branch_stats()
